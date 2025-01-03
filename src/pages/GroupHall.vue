@@ -13,7 +13,7 @@
                 @click="goToGroupDetails(group.group_id)">
                 <h2>{{ group.name }}</h2>
                 <p>描述：{{ group.description || '暂无描述' }}</p>
-                <p>成员：{{ group.member_count }} / {{ group.volume === 0 ? '无成员限制' : group.volume }}</p>
+                <p>成员：{{ group.current_members }} / {{ group.volume === 0 ? '无成员限制' : group.volume }}</p>
                 <p>创建时间：{{ formatDate(group.created_at) }}</p>
             </div>
         </div>
@@ -95,6 +95,7 @@ const filterGroups = async () => {
         };
         const response = await api.post('groups/filter', payload);
         groups.value = response;
+        console.log('筛选组成功:', response);
         closeFilterModal();
     } catch (error) {
         console.error('筛选组失败:', error.message);

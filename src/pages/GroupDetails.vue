@@ -14,9 +14,14 @@
         <!-- 申请加入小组 -->
         <div v-if="!is_member" class="join-group-section">
             <h3>申请加入该组</h3>
-            <textarea v-model="join_request.description" placeholder="请输入申请描述，例如您的技能或意图"></textarea>
-            <button class="submit-button" @click="applyToGroup">提交申请</button>
+            <!-- 绑定输入框 -->
+            <textarea v-model="join_request.description" placeholder="请输入申请描述，例如您的技能或意图" rows="4" cols="50"></textarea>
+            <!-- 提交按钮 -->
+            <button class="submit-button" @click="applyToGroup">
+                提交申请
+            </button>
         </div>
+
 
         <!-- 成员列表 -->
         <h2>组员列表</h2>
@@ -135,7 +140,10 @@ const current_user_id = parseInt(localStorage.getItem('user_id'), 10);
 // 状态
 const showTransferModal = ref(false); // 控制转移组长模态框的显示
 const newLeaderId = ref(null); // 存储选中的新组长 ID
-
+// 申请加入小组状态
+const join_request = ref({
+    description: '',
+});
 // 打开转移组长模态框
 const openTransferModal = () => {
     showTransferModal.value = true;
@@ -170,10 +178,7 @@ const transferLeader = async () => {
     }
 };
 
-// 申请加入小组状态
-const join_request = ref({
-    description: '',
-});
+
 
 // 是否为小组成员
 const is_member = computed(() => {
@@ -216,20 +221,27 @@ const member_details = ref({});
 
 // 提交加入小组申请方法
 const applyToGroup = async () => {
-    if (!join_request.description.trim()) {
+    console.log('join_request 对象:', join_request.value);
+    console.log('申请描述原始值:', join_request.description);
+    console.log('去掉空格后的值:', join_request.description?.trim());
+    // 确保 join_request.description 存在并为字符串
+    const description = join_request.value.description?.trim() || '';
+
+    if (!description) {
         alert('请输入申请描述！');
         return;
     }
 
     try {
-        const response = await api.post(`groups/${group_id}/apply`, join_request.value);
+        const response = await api.post(`groups/${group_id}/apply`, { description });
         alert(response.message || '申请已发送');
-        join_request.description = ''; // 清空输入框
+        join_request.value.description = ''; // 清空输入框
     } catch (error) {
         console.error('提交加入组申请失败:', error.message);
         alert(error.response?.data?.message || '提交申请失败，请稍后再试');
     }
 };
+
 
 
 // 获取组员详情的方法
@@ -564,31 +576,45 @@ select {
 .join-group-section {
     margin-top: 20px;
     padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
     background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.join-group-section h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
 }
 
 textarea {
     width: 100%;
     padding: 10px;
-    margin-bottom: 10px;
+    font-size: 14px;
     border: 1px solid #ccc;
     border-radius: 4px;
     resize: none;
+    margin-bottom: 10px;
 }
 
 .submit-button {
     padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 16px;
-    background-color: #007bff;
-    color: white;
+    font-size: 14px;
+    transition: background-color 0.3s;
 }
 
 .submit-button:hover {
     background-color: #0056b3;
+}
+
+.submit-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
 </style>
