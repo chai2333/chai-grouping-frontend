@@ -32,7 +32,7 @@
                 </div>
                 <div class="form-group">
                     <label for="skillDescription">技能描述</label>
-                    <textarea id="skillDescription" v-model="resume.skillDescription" placeholder="请输入技能描述"
+                    <textarea id="skillDescription" v-model="resume.skill_description" placeholder="请输入技能描述"
                         rows="4"></textarea>
                 </div>
                 <button type="submit" class="button">更新简历信息</button>
@@ -56,7 +56,7 @@ const profile = ref({
 const resume = ref({
     school: '',
     grade: '',
-    skillDescription: '',
+    skill_description: '',
 });
 
 // 获取账户信息

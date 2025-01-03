@@ -1,57 +1,70 @@
 <template>
   <div class="task-header">
-  <h1>{{ task.title }}</h1>
-  <p><strong>Group:</strong> {{ task.group_name }}</p>
-  <p><strong>Assigned to:</strong> {{ task.username }}</p>
-  <p><strong>Description:</strong> {{ task.description }}</p>
-  <p><strong>State:</strong> {{ task.state }}</p>
-  <p><strong>Deadline:</strong> {{ new Date(task.deadline).toLocaleString() }}</p>
-</div>
-<button class="create-submission-button" @click="showSubmissionModal = true">Create New Submission</button>
-<div v-if="task.submissions.length" class="submissions-container">
-  <h2>Submissions</h2>
-  <ul class="submissions-list">
-    <li v-for="submission in task.submissions" :key="submission.submission_id" class="submission-item">
-      <p><strong>Username:</strong> {{ submission.username }}</p>
-      <p>
-        <strong>Creation Date:</strong> {{ new Date(submission.creation_date).toLocaleString() }}
-      </p>
-      <p><strong>Text:</strong> {{ submission.text }}</p>
-      <p v-if="submission.file_name">
-        <strong>File:</strong> {{ submission.file_name }}
-        <button @click="downloadFile(submission.submission_id)">Download</button>
-      </p>
-      <button @click="editSubmission(submission)">Edit</button>
-      <button @click="deleteSubmission(submission.submission_id)">Delete</button>
-    </li>
-  </ul>
-</div>
+    <h1>{{ task.title }}</h1>
+    <p><strong>小组：</strong> {{ task.group_name }}</p>
+    <p><strong>负责人：</strong> {{ task.username }}</p>
+    <p><strong>描述：</strong> {{ task.description }}</p>
+    <p><strong>状态：</strong> {{ task.state }}</p>
+    <p><strong>截止日期：</strong> {{ new Date(task.deadline).toLocaleString() }}</p>
+  </div>
+  <button v-if="performable" class="create-submission-button" @click="showSubmissionModal = true">
+    创建新提交
+  </button>
+  <div v-if="task.submissions.length" class="submissions-container">
+    <h2>提交</h2>
+    <ul class="submissions-list">
+      <li
+        v-for="submission in task.submissions"
+        :key="submission.submission_id"
+        class="submission-item"
+      >
+        <p><strong>用户名：</strong> {{ submission.username }}</p>
+        <p>
+          <strong>创建日期：</strong> {{ new Date(submission.creation_date).toLocaleString() }}
+        </p>
+        <p><strong>文本：</strong> {{ submission.text }}</p>
+        <p v-if="submission.file_name">
+          <strong>文件：</strong> {{ submission.file_name }}
+          <button @click="downloadFile(submission.submission_id)">下载</button>
+        </p>
+        <button v-if="performable" @click="editSubmission(submission)">编辑</button>
+        <button v-if="performable" @click="deleteSubmission(submission.submission_id)">
+          删除
+        </button>
+      </li>
+    </ul>
+  </div>
 
-<div v-if="showSubmissionModal" class="modal-overlay">
-  <div class="modal">
-    <h2 v-if="!isEditingSubmission">Create New Submission</h2>
-    <h2 v-if="isEditingSubmission">Edit Submission</h2>
-    <textarea v-model="newSubmissionText" placeholder="Enter your submission text"></textarea>
-    <input type="file" @change="handleFileUpload" />
-    <div class="form-actions">
-      <button class="submit-button" v-if="!isEditingSubmission" @click="submitNewSubmission">
-        Submit
-      </button>
-      <button class="update-button" v-if="isEditingSubmission" @click="updateSubmission">
-        Update
-      </button>
-      <button class="cancel-button" @click="showSubmissionModal = false">Cancel</button>
+  <div v-if="showSubmissionModal" class="modal-overlay">
+    <div class="modal">
+      <h2 v-if="!isEditingSubmission">创建新提交</h2>
+      <h2 v-if="isEditingSubmission">编辑提交</h2>
+      <textarea v-model="newSubmissionText" placeholder="输入你的提交文本"></textarea>
+      <input type="file" @change="handleFileUpload" />
+      <div class="form-actions">
+        <button class="submit-button" v-if="!isEditingSubmission" @click="submitNewSubmission">
+          提交
+        </button>
+        <button class="update-button" v-if="isEditingSubmission" @click="updateSubmission">
+          更新
+        </button>
+        <button class="cancel-button" @click="showSubmissionModal = false">取消</button>
+      </div>
     </div>
   </div>
-</div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { api } from '@/services/api';
 import { useRoute } from 'vue-router';
 
 const apiUrl = import.meta.env.VITE_API_BASE_URL;
+const currentUserId = JSON.parse(localStorage.getItem('user_id'));
+
+const performable = computed(() => {
+  return task.value.user_id === currentUserId && task.value.state === 'ongoing';
+});
 
 const route = useRoute();
 
@@ -150,7 +163,7 @@ const getTaskDetails = async () => {
 
 const downloadFile = async (submission_id) => {
   try {
-    const response = await fetch(`/api/submissions/${submission_id}/download`, {
+    const response = await fetch(`${apiUrl}/submissions/${submission_id}/download`, {
       method: 'GET',
       headers: {
         responseType: 'blob',
