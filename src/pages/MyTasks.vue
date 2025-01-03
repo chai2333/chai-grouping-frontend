@@ -14,13 +14,31 @@
 </template>
 
 <script setup>
+import { onMounted, ref } from 'vue';
+import { api } from '@/services/api';
+
 // 示例任务数据
-const tasks = [
+const tasks = ref([
     { id: 1, group: '所属组A', description: '任务描述1' },
     { id: 2, group: '所属组B', description: '任务描述2' },
     { id: 3, group: '所属组C', description: '任务描述3' },
     { id: 4, group: '所属组D', description: '任务描述4' },
-];
+]);
+
+const getTasks = async () => {
+  try{
+    const response = await api.get('/tasks/user');
+    tasks.value = response.data;
+  }catch (error){
+    console.error('获取任务列表失败', error);
+  }
+};
+
+
+onMounted(()=>{
+  getTasks();
+})
+
 </script>
 
 <style scoped>
