@@ -6,15 +6,28 @@
         <!-- 标题 -->
         <h1 class="title">通知列表</h1>
 
-        <!-- 快速标记已读 -->
-        <button class="mark-all-read-button" @click="markAllAsRead">标记全部为已读</button>
+        <div class="filter-and-button" style="display: flex; justify-content: space-between; width: 80%;">
+            <!-- 筛选通知 -->
+            <select v-model="filter" class="notification-filter">
+                <option value="all">全部</option>
+                <option value="read">已读</option>
+                <option value="unread">未读</option>
+            </select>
+            <!-- 快速标记已读 -->
+            <button class="mark-all-read-button" @click="markAllAsRead">标记全部为已读</button>
+        </div>
 
         <!-- 通知列表 -->
         <ul class="notification-list">
-            <li class="notification-item" v-for="notification in notifications" :key="notification.notification_id"
-                @click="viewNotification(notification.notification_id)" :class="{ unread: !notification.read }">
-                <!-- 通知标题 -->
-                <p class="notification-title">{{ notification.title }}</p>
+            <li class="notification-item" v-for="notification in filteredNotifications"
+                :key="notification.notification_id" @click="viewNotification(notification.notification_id)"
+                :class="{ unread: notification.read == 0 }">
+                <div style="display: flex; align-items: center;">
+                    <!-- 未读徽标 -->
+                    <!-- <span v-if="notification.read == 0" class="badge" style="margin-right: 10px;"></span> -->
+                    <!-- 通知标题 -->
+                    <p class="notification-title" style="flex: 1;">{{ notification.title }}</p>
+                </div>
 
                 <!-- 通知时间 -->
                 <p class="notification-time">{{ formatTime(notification.create_time) }}</p>
@@ -23,8 +36,6 @@
                 <p v-if="notification.joinRequest" class="notification-status">
                     状态: {{ formatStatus(notification.joinRequest.status) }}
                 </p>
-
-
             </li>
         </ul>
 
@@ -62,7 +73,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { api } from '@/services/api'; // 通用 API 服务
 
@@ -70,7 +81,7 @@ const router = useRouter();
 
 // 通知列表
 const notifications = ref([]);
-
+const filter = ref('unread');
 // 通知详情
 const notificationDetail = ref();
 
@@ -181,7 +192,20 @@ const formatStatus = (status) => {
 onMounted(() => {
     fetchNotifications();
 });
+
+
+// 计算属性：根据筛选条件过滤通知
+const filteredNotifications = computed(() => {
+    if (filter.value === 'all') {
+        return notifications.value;
+    } else if (filter.value === 'read') {
+        return notifications.value.filter(notification => notification.read === 1);
+    } else if (filter.value === 'unread') {
+        return notifications.value.filter(notification => notification.read === 0);
+    }
+});
 </script>
+
 
 <style scoped>
 /* 整体容器样式 */
@@ -219,6 +243,25 @@ onMounted(() => {
     margin-bottom: 20px;
 }
 
+.filter-and-button {
+    display: flex;
+    justify-content: space-between;
+    width: 600px;
+}
+
+.notification-filter {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    height: 40px;
+}
+
+.notification-filter:hover {
+    transform: scale(1.01);
+}
+
 /* 快速标记已读按钮 */
 .mark-all-read-button {
     margin-bottom: 20px;
@@ -242,10 +285,12 @@ onMounted(() => {
     padding: 0;
     width: 100%;
     max-width: 600px;
+    overflow: auto;
 }
 
 .notification-item {
-    background-color: white;
+    background-color: #f2f2f2;
+    color: #989898;
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 10px 20px;
@@ -255,7 +300,12 @@ onMounted(() => {
 }
 
 .notification-item.unread {
-    background-color: #f2f8ff;
+    background-color: #fdfdfd;
+    /* 未读通知的背景颜色 */
+    color: #000;
+    /* 未读通知的文本颜色 */
+    font-weight: bold;
+    /* 未读通知的文本加粗 */
 }
 
 .notification-item:hover {
