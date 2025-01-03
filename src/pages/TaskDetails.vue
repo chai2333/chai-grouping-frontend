@@ -1,49 +1,49 @@
 <template>
   <div class="task-header">
-  <h1>{{ task.title }}</h1>
-  <p><strong>Group:</strong> {{ task.group_name }}</p>
-  <p><strong>Assigned to:</strong> {{ task.username }}</p>
-  <p><strong>Description:</strong> {{ task.description }}</p>
-  <p><strong>State:</strong> {{ task.state }}</p>
-  <p><strong>Deadline:</strong> {{ new Date(task.deadline).toLocaleString() }}</p>
-</div>
-<button class="create-submission-button" @click="showSubmissionModal = true">Create New Submission</button>
-<div v-if="task.submissions.length" class="submissions-container">
-  <h2>Submissions</h2>
-  <ul class="submissions-list">
-    <li v-for="submission in task.submissions" :key="submission.submission_id" class="submission-item">
-      <p><strong>Username:</strong> {{ submission.username }}</p>
-      <p>
-        <strong>Creation Date:</strong> {{ new Date(submission.creation_date).toLocaleString() }}
-      </p>
-      <p><strong>Text:</strong> {{ submission.text }}</p>
-      <p v-if="submission.file_name">
-        <strong>File:</strong> {{ submission.file_name }}
-        <button @click="downloadFile(submission.submission_id)">Download</button>
-      </p>
-      <button @click="editSubmission(submission)">Edit</button>
-      <button @click="deleteSubmission(submission.submission_id)">Delete</button>
-    </li>
-  </ul>
-</div>
+    <h1>{{ task.title }}</h1>
+    <p><strong>Group:</strong> {{ task.group_name }}</p>
+    <p><strong>Assigned to:</strong> {{ task.username }}</p>
+    <p><strong>Description:</strong> {{ task.description }}</p>
+    <p><strong>State:</strong> {{ task.state }}</p>
+    <p><strong>Deadline:</strong> {{ new Date(task.deadline).toLocaleString() }}</p>
+  </div>
+  <button class="create-submission-button" @click="showSubmissionModal = true">Create New Submission</button>
+  <div v-if="task.submissions.length" class="submissions-container">
+    <h2>Submissions</h2>
+    <ul class="submissions-list">
+      <li v-for="submission in task.submissions" :key="submission.submission_id" class="submission-item">
+        <p><strong>Username:</strong> {{ submission.username }}</p>
+        <p>
+          <strong>Creation Date:</strong> {{ new Date(submission.creation_date).toLocaleString() }}
+        </p>
+        <p><strong>Text:</strong> {{ submission.text }}</p>
+        <p v-if="submission.file_name">
+          <strong>File:</strong> {{ submission.file_name }}
+          <button @click="downloadFile(submission.submission_id)">Download</button>
+        </p>
+        <button @click="editSubmission(submission)">Edit</button>
+        <button @click="deleteSubmission(submission.submission_id)">Delete</button>
+      </li>
+    </ul>
+  </div>
 
-<div v-if="showSubmissionModal" class="modal-overlay">
-  <div class="modal">
-    <h2 v-if="!isEditingSubmission">Create New Submission</h2>
-    <h2 v-if="isEditingSubmission">Edit Submission</h2>
-    <textarea v-model="newSubmissionText" placeholder="Enter your submission text"></textarea>
-    <input type="file" @change="handleFileUpload" />
-    <div class="form-actions">
-      <button class="submit-button" v-if="!isEditingSubmission" @click="submitNewSubmission">
-        Submit
-      </button>
-      <button class="update-button" v-if="isEditingSubmission" @click="updateSubmission">
-        Update
-      </button>
-      <button class="cancel-button" @click="showSubmissionModal = false">Cancel</button>
+  <div v-if="showSubmissionModal" class="modal-overlay">
+    <div class="modal">
+      <h2 v-if="!isEditingSubmission">Create New Submission</h2>
+      <h2 v-if="isEditingSubmission">Edit Submission</h2>
+      <textarea v-model="newSubmissionText" placeholder="Enter your submission text"></textarea>
+      <input type="file" @change="handleFileUpload" />
+      <div class="form-actions">
+        <button class="submit-button" v-if="!isEditingSubmission" @click="submitNewSubmission">
+          Submit
+        </button>
+        <button class="update-button" v-if="isEditingSubmission" @click="updateSubmission">
+          Update
+        </button>
+        <button class="cancel-button" @click="showSubmissionModal = false">Cancel</button>
+      </div>
     </div>
   </div>
-</div>
 </template>
 
 <script setup>
@@ -150,7 +150,7 @@ const getTaskDetails = async () => {
 
 const downloadFile = async (submission_id) => {
   try {
-    const response = await fetch(`/api/submissions/${submission_id}/download`, {
+    const response = await fetch(`${apiUrl}/submissions/${submission_id}/download`, {
       method: 'GET',
       headers: {
         responseType: 'blob',
