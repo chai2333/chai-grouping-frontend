@@ -2,10 +2,29 @@
     <div class="group-hall">
         <h1>小组大厅</h1>
 
-        <!-- 筛选按钮 -->
+        <!-- 筛选和智能匹配按钮 -->
         <div class="actions">
-            <button class="filter-button" @click="openFilterModal">筛选</button>
+            <button class="filter-button" @click="openFilterModal">筛选组</button>
+            <button class="match-button" @click="fetchMatchedGroups">智能匹配</button>
         </div>
+
+        <!-- 匹配结果展示 -->
+        <div v-if="showMatchResults" class="match-results">
+            <h2>智能匹配结果</h2>
+            <ul class="group-list">
+                <li class="group-item" v-for="group in matchedGroups" :key="group.group_id"
+                    @click="goToGroupDetails(group.group_id)">
+                    <h3>{{ group.name }}</h3>
+                    <p>匹配度：{{ group.rating }}</p>
+                    <p>匹配原因：{{ group.reason }}</p>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 如果没有匹配结果 -->
+        <p v-if="showMatchResults && !matchedGroups.length" class="no-result">
+            暂无匹配结果，请调整条件后再试。
+        </p>
 
         <!-- 组列表 -->
         <div class="group-list">
@@ -13,7 +32,7 @@
                 @click="goToGroupDetails(group.group_id)">
                 <h2>{{ group.name }}</h2>
                 <p>描述：{{ group.description || '暂无描述' }}</p>
-                <p>成员：{{ group.member_count }} / {{ group.volume === 0 ? '无成员限制' : group.volume }}</p>
+                <p>成员：{{ group.current_members }} / {{ group.volume === 0 ? '无成员限制' : group.volume }}</p>
                 <p>创建时间：{{ formatDate(group.created_at) }}</p>
             </div>
         </div>
@@ -68,6 +87,9 @@ const router = useRouter();
 
 // 小组列表
 const groups = ref([]);
+const matchedGroups = ref([]); // 匹配组列表
+const showMatchResults = ref(false); // 是否展示匹配结果
+const matchCriteria = ref({ keyword: 'string', threshold: 0.6 }); // 匹配条件
 
 // 筛选模态框状态
 const showFilterModal = ref(false);
@@ -80,6 +102,32 @@ const filters = ref({
     created_before: null,
     created_after: null,
 });
+
+// 获取智能匹配组
+const fetchMatchedGroups = async () => {
+    try {
+        const payload = {
+            keyword: matchCriteria.value.keyword,
+            threshold: matchCriteria.value.threshold,
+        };
+
+        const response = await api.post('groups/match', payload);
+        matchedGroups.value = response;
+        showMatchResults.value = true;
+        console.log('智能匹配成功:', response);
+    } catch (error) {
+        console.error('智能匹配失败：', error.message);
+
+        if (error.response?.status === 400) {
+            alert(error.response.data.message || '请先完善个人简历信息以使用智能匹配功能。');
+        } else if (error.response?.status === 503) {
+            alert(error.response.data.message || '智能匹配服务暂时不可用，请稍后再试。');
+        } else {
+            alert('智能匹配失败，请稍后再试！');
+        }
+    }
+};
+
 
 // 获取所有组或根据筛选条件获取组
 const filterGroups = async () => {
@@ -95,6 +143,7 @@ const filterGroups = async () => {
         };
         const response = await api.post('groups/filter', payload);
         groups.value = response;
+        console.log('筛选组成功:', response);
         closeFilterModal();
     } catch (error) {
         console.error('筛选组失败:', error.message);
@@ -131,7 +180,7 @@ onMounted(() => {
 
 
 <style scoped>
-.group-hall {
+.group-hall-container {
     padding: 20px;
 }
 
@@ -153,6 +202,15 @@ onMounted(() => {
 
 .filter-button:hover {
     background-color: #0056b3;
+}
+
+.match-button {
+    background-color: #28a745;
+    color: white;
+}
+
+.match-button:hover {
+    background-color: #218838;
 }
 
 .group-list {

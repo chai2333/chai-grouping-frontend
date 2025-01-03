@@ -234,7 +234,10 @@ const current_user_id = parseInt(localStorage.getItem('user_id'), 10);
 // 状态
 const showTransferModal = ref(false); // 控制转移组长模态框的显示
 const newLeaderId = ref(null); // 存储选中的新组长 ID
-
+// 申请加入小组状态
+const join_request = ref({
+    description: '',
+});
 // 打开转移组长模态框
 const openTransferModal = () => {
   showTransferModal.value = true;
@@ -269,10 +272,6 @@ const transferLeader = async () => {
   }
 };
 
-// 申请加入小组状态
-const join_request = ref({
-  description: ''
-});
 
 // 是否为小组成员
 const is_member = computed(() => {
@@ -312,20 +311,28 @@ const member_details = ref({});
 
 // 提交加入小组申请方法
 const applyToGroup = async () => {
-  if (!join_request.value.description.trim()) {
-    alert('请输入申请描述！');
-    return;
-  }
+    console.log('join_request 对象:', join_request.value);
+    console.log('申请描述原始值:', join_request.description);
+    console.log('去掉空格后的值:', join_request.description?.trim());
+    // 确保 join_request.description 存在并为字符串
+    const description = join_request.value.description?.trim() || '';
 
-  try {
-    const response = await api.post(`groups/${group_id}/apply`, join_request.value);
-    alert(response.message || '申请已发送');
-    join_request.value.description = ''; // 清空输入框
-  } catch (error) {
-    console.error('提交加入组申请失败:', error.message);
-    alert(error.response?.data?.message || '提交申请失败，请稍后再试');
-  }
+    if (!description) {
+        alert('请输入申请描述！');
+        return;
+    }
+
+    try {
+        const response = await api.post(`groups/${group_id}/apply`, { description });
+        alert(response.message || '申请已发送');
+        join_request.value.description = ''; // 清空输入框
+    } catch (error) {
+        console.error('提交加入组申请失败:', error.message);
+        alert(error.response?.data?.message || '提交申请失败，请稍后再试');
+    }
 };
+
+
 
 // 获取组员详情的方法
 const fetchMemberDetails = async (userId) => {
@@ -349,6 +356,7 @@ const formatDate = (dateString) => {
   const date = new Date(dateString);
   return date.toLocaleDateString();
 };
+
 
 // 小组详情数据
 const group_details = ref({
@@ -752,6 +760,13 @@ select {
   border: 1px solid #ccc;
   border-radius: 8px;
   background-color: #f9f9f9;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.join-group-section h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
 }
 
 textarea {
@@ -761,16 +776,18 @@ textarea {
   border: 1px solid #ccc;
   border-radius: 4px;
   resize: none;
+  font-size: 14px;
 }
 
 .submit-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  background-color: #007bff;
-  color: white;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
 }
 
 .submit-button:hover {

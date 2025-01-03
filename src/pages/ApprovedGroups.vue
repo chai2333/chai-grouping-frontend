@@ -56,8 +56,6 @@ const leaveGroup = async (groupId) => {
         const response = await api.post(`groups/${groupId}/leave`);
         alert(response.message || '已成功退出该组');
 
-        // 刷新已加入的组列表
-        fetchJoinedGroups();
     } catch (error) {
         console.error('退出组失败:', error.message);
         alert(error.response?.data?.message || '退出组失败，请稍后再试');

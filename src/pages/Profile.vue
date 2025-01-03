@@ -31,8 +31,8 @@
                     <input id="grade" type="text" v-model="resume.grade" placeholder="请输入年级" />
                 </div>
                 <div class="form-group">
-                    <label for="skillDescription">技能描述</label>
-                    <textarea id="skillDescription" v-model="resume.skill_description" placeholder="请输入技能描述"
+                    <label for="skill_description">技能描述</label>
+                    <textarea id="skill_description" v-model="resume.skill_description" placeholder="请输入技能描述"
                         rows="4"></textarea>
                 </div>
                 <button type="submit" class="button">更新简历信息</button>
