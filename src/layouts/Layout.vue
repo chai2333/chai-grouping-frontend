@@ -1,4 +1,5 @@
 <template>
+    <Header /> <!-- 导入顶部导航栏 -->
     <div class="layout">
         <Sidebar /> <!-- 导入导航栏 -->
         <div class="main-content">
@@ -9,6 +10,7 @@
 
 <script setup>
 import Sidebar from '../components/Sidebar.vue';
+import Header from '@/components/Header.vue';
 </script>
 
 <style scoped>
