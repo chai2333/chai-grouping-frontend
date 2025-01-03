@@ -18,13 +18,45 @@
             <button class="submit-button" @click="applyToGroup">提交申请</button>
         </div>
 
-
         <!-- 成员列表 -->
         <h2>组员列表</h2>
         <div class="member-list">
             <div v-for="member in group_details.members" :key="member.user_id" class="member-item"
                 :class="{ leader: member.is_leader === 1 }" @click="fetchMemberDetails(member.user_id)">
                 <span>{{ member.username.slice(-3) }}</span>
+                <!-- 踢出按钮，仅对组长可见且不能踢出其他组长 -->
+                <button v-if="is_leader && member.is_leader !== 1" class="kick-button"
+                    @click.stop="kickMember(member.user_id)">
+                    踢出
+                </button>
+            </div>
+        </div>
+
+        <!-- 转移组长并退出按钮 -->
+        <button v-if="is_leader" class="transfer-leader-button" @click="openTransferModal">
+            转移组长并退出
+        </button>
+
+        <!-- 转移组长模态框 -->
+        <div v-if="showTransferModal" class="modal-overlay">
+            <div class="modal">
+                <h2>转移组长</h2>
+                <form @submit.prevent="transferLeader">
+                    <div class="form-group">
+                        <label for="new-leader">选择新组长</label>
+                        <select id="new-leader" v-model="newLeaderId" required>
+                            <option v-for="member in group_details.members.filter(
+                                (m) => m.user_id !== current_user_id
+                            )" :key="member.user_id" :value="member.user_id">
+                                {{ member.username }}
+                            </option>
+                        </select>
+                    </div>
+                    <button type="submit" class="submit-button">确认转移并退出</button>
+                    <button type="button" class="cancel-button" @click="closeTransferModal">
+                        取消
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -98,6 +130,45 @@ import { api } from '@/services/api';
 const route = useRoute();
 const router = useRouter();
 const group_id = route.params.group_id;
+// 当前用户的 ID
+const current_user_id = parseInt(localStorage.getItem('user_id'), 10);
+// 状态
+const showTransferModal = ref(false); // 控制转移组长模态框的显示
+const newLeaderId = ref(null); // 存储选中的新组长 ID
+
+// 打开转移组长模态框
+const openTransferModal = () => {
+    showTransferModal.value = true;
+};
+
+// 关闭转移组长模态框
+const closeTransferModal = () => {
+    showTransferModal.value = false;
+    newLeaderId.value = null; // 重置选中的组长
+};
+
+// 转移组长并退出
+const transferLeader = async () => {
+    if (!newLeaderId.value) {
+        alert('请选择新的组长！');
+        return;
+    }
+
+    try {
+        const response = await api.post(`groups/${group_id}/leader_leave`, {
+            new_leader_id: newLeaderId.value,
+        });
+        alert(response.message || '已成功转移组长并退出该组');
+
+        // 跳转回“我创建的组”页面
+        router.push('/my-group/created');
+    } catch (error) {
+        console.error('转移组长失败:', error.message);
+        alert(error.response?.data?.message || '转移组长失败，请稍后再试');
+    } finally {
+        closeTransferModal();
+    }
+};
 
 // 申请加入小组状态
 const join_request = ref({
@@ -106,15 +177,35 @@ const join_request = ref({
 
 // 是否为小组成员
 const is_member = computed(() => {
-    const user_id = parseInt(localStorage.getItem('user_id')); // 从 localStorage 获取当前用户 ID
-    console.log('当前用户 ID:', user_id);
+    console.log('当前用户 ID:', current_user_id);
 
-    const member = group_details.value.members.find((member) => member.user_id === user_id);
+    if (!group_details.value.members || group_details.value.members.length === 0) {
+        console.log('成员列表未加载或为空:', group_details.value.members);
+        return false; // 如果成员列表未加载或为空，返回 false
+    }
+
+    const member = group_details.value.members.find(
+        (member) => member.user_id === current_user_id
+    );
     console.log('当前用户是否是小组成员:', !!member);
-    return !!member; // 如果找到匹配的成员，返回 true；否则返回 false
+    return !!member; // 如果找到用户则返回 true，否则返回 false
 });
 
+// 踢出组员
+const kickMember = async (userId) => {
+    if (!confirm('您确定要踢出该成员吗？')) return;
 
+    try {
+        const response = await api.delete(`groups/${group_id}/members/${userId}/remove`);
+        alert(response.message || '已成功将成员移出该组');
+
+        // 更新成员列表
+        await fetchGroupDetails();
+    } catch (error) {
+        console.error('踢出成员失败:', error.message);
+        alert(error.response?.data?.message || '踢出成员失败，请稍后再试');
+    }
+};
 
 
 // 控制模态框显示状态
@@ -177,7 +268,6 @@ const group_details = ref({
 
 // 是否为组长
 const is_leader = computed(() => {
-    const current_user_id = parseInt(localStorage.getItem('user_id'));
     const leader = group_details.value.members.find(
         (member) => parseInt(member.is_leader) === 1 && member.user_id === current_user_id
     );
@@ -270,10 +360,30 @@ onMounted(() => {
 
 <style scoped>
 /* 页面样式 */
+.transfer-leader-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    background-color: #ff9800;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.transfer-leader-button:hover {
+    background-color: #e68a00;
+}
+
 .group-details {
     padding: 20px;
     background-color: #f9f9f9;
     min-height: 100vh;
+}
+
+.form-group {
+    margin-bottom: 15px;
 }
 
 h1 {
@@ -335,35 +445,54 @@ p {
 
 /* 成员列表样式 */
 .member-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 20px;
 }
 
 .member-item {
-    width: 60px;
-    height: 60px;
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #007bff;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #f0f0f0;
-    border-radius: 50%;
-    cursor: pointer;
+    font-size: 14px;
+    color: white;
     font-weight: bold;
-    text-transform: uppercase;
-    color: #555;
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .member-item:hover {
-    background-color: #007bff;
-    color: white;
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+
 .member-item.leader {
-    background-color: #28a745;
+    background-color: #ffc107;
+    /* 组长背景色 */
+}
+
+.kick-button {
+    position: absolute;
+    bottom: -10px;
+    right: -10px;
+    background-color: #ff4d4f;
     color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.kick-button:hover {
+    background-color: #d9363e;
 }
 
 .modal-overlay {
@@ -394,33 +523,35 @@ p {
 }
 
 
-input,
-textarea,
 select {
     width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
     border-radius: 4px;
 }
 
-.submit-button,
+.submit-button {
+    margin-right: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    background-color: #4caf50;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
 .cancel-button {
     padding: 10px 20px;
     border: none;
     border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.submit-button {
-    background-color: #007bff;
+    background-color: #f44336;
     color: white;
+    cursor: pointer;
+    font-size: 14px;
 }
 
-.cancel-button {
-    background-color: #ccc;
-    color: black;
-}
 
 .submit-button:hover {
     background-color: #0056b3;
