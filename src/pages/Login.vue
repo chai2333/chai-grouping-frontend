@@ -65,6 +65,9 @@ const handleLogin = async () => {
         console.log(response);
 
         const { token, user_id } = response;
+
+        console.log("saved information:",token, user_id);
+
         localStorage.setItem('token', token); // 保存 token
         localStorage.setItem('user_id', user_id); // 保存 user_id
 

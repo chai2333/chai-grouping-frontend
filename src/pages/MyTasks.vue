@@ -5,9 +5,9 @@
 
         <!-- 任务卡片区域 -->
         <div class="tasks-grid">
-            <div class="task-card" v-for="task in tasks" :key="task.id">
-                <p class="task-group">{{ task.group }}</p>
-                <p class="task-desc">{{ task.description }}</p>
+            <div class="task-card" v-for="task in tasks" :key="task.task_id" @click="goToTaskDetails(task.task_id)">
+                <p class="task-group">{{ task.group_name }}</p>
+                <p class="task-desc">{{ task.title }}</p>
             </div>
         </div>
     </div>
@@ -16,24 +16,24 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { api } from '@/services/api';
+import router from '@/router';
 
-// 示例任务数据
-const tasks = ref([
-    { id: 1, group: '所属组A', description: '任务描述1' },
-    { id: 2, group: '所属组B', description: '任务描述2' },
-    { id: 3, group: '所属组C', description: '任务描述3' },
-    { id: 4, group: '所属组D', description: '任务描述4' },
-]);
+// 任务列表
+const tasks = ref([]);
 
 const getTasks = async () => {
   try{
-    const response = await api.get('/tasks/user');
-    tasks.value = response.data;
+    const response = await api.get('tasks/user');
+    tasks.value = response;
+    console.log('获取任务列表成功', tasks.value);
   }catch (error){
     console.error('获取任务列表失败', error);
   }
 };
 
+const goToTaskDetails = async (taskId) => {
+  router.push(`/task/${taskId}`);
+};
 
 onMounted(()=>{
   getTasks();
