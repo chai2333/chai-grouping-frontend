@@ -1,221 +1,181 @@
 <template>
-    <div class="group-hall-container">
-        <!-- 顶部区域 -->
-        <div class="header">
-            <button class="header-button">小组大厅</button>
-            <div class="actions">
-                <button class="create-button" @click="showModal = true">创建组</button>
-            </div>
+    <div class="group-hall">
+        <h1>小组大厅</h1>
+
+        <!-- 筛选按钮 -->
+        <div class="actions">
+            <button class="filter-button" @click="openFilterModal">筛选</button>
         </div>
 
-        <!-- 小组展示区域 -->
+        <!-- 组列表 -->
         <div class="group-list">
-            <div class="group-box" v-for="group in groups" :key="group.id" @click="goToDetails(group.id)">
-                <h2>{{ group.title }}</h2>
-                <p>人数：{{ group.currentMembers }}/{{ group.totalMembers }}</p>
+            <div v-for="group in groups" :key="group.group_id" class="group-item"
+                @click="goToGroupDetails(group.group_id)">
+                <h2>{{ group.name }}</h2>
+                <p>描述：{{ group.description || '暂无描述' }}</p>
+                <p>成员：{{ group.member_count }} / {{ group.volume === 0 ? '无成员限制' : group.volume }}</p>
+                <p>创建时间：{{ formatDate(group.created_at) }}</p>
             </div>
         </div>
 
-        <!-- 模态框 -->
-        <div v-if="showModal" class="modal-overlay">
+        <!-- 如果没有组，显示提示 -->
+        <div v-if="groups.length === 0" class="empty-message">
+            <p>暂无小组可显示。</p>
+        </div>
+
+        <!-- 筛选模态框 -->
+        <div v-if="showFilterModal" class="modal-overlay">
             <div class="modal">
-                <h2>创建小组</h2>
-                <form @submit.prevent="submitForm">
-                    <!-- 组队标题 -->
+                <h2>筛选组</h2>
+                <form @submit.prevent="filterGroups">
                     <div class="form-group">
-                        <label for="title">组队标题</label>
-                        <input id="title" type="text" v-model="form.title" placeholder="请输入组队标题" required />
+                        <label for="keyword">关键字</label>
+                        <input id="keyword" v-model="filters.keyword" placeholder="请输入关键字" />
                     </div>
-
-                    <!-- 当前人数 -->
                     <div class="form-group">
-                        <label for="currentMembers">当前人数</label>
-                        <input id="currentMembers" type="number" v-model="form.currentMembers" placeholder="请输入当前人数"
-                            required />
+                        <label for="min-volume">最小人数</label>
+                        <input id="min-volume" type="number" v-model="filters.min_volume" />
                     </div>
-
-                    <!-- 总人数 -->
                     <div class="form-group">
-                        <label for="totalMembers">总人数</label>
-                        <input id="totalMembers" type="number" v-model="form.totalMembers" placeholder="请输入总人数"
-                            required />
+                        <label for="max-volume">最大人数</label>
+                        <input id="max-volume" type="number" v-model="filters.max_volume" />
                     </div>
-
-                    <!-- 是否需要批准 -->
                     <div class="form-group">
-                        <label for="approval">是否需要批准</label>
-                        <input id="approval" type="checkbox" v-model="form.requiresApproval" />
+                        <label for="created-after">创建时间晚于</label>
+                        <input id="created-after" type="date" v-model="filters.created_after" />
                     </div>
-
-                    <!-- 组队详情说明 -->
                     <div class="form-group">
-                        <label for="details">组队详情说明</label>
-                        <textarea id="details" v-model="form.details" placeholder="请输入组队详情说明" rows="4"
-                            required></textarea>
+                        <label for="created-before">创建时间早于</label>
+                        <input id="created-before" type="date" v-model="filters.created_before" />
                     </div>
-
-                    <!-- 按钮 -->
-                    <div class="form-actions">
-                        <button type="submit" class="submit-button">提交</button>
-                        <button type="button" class="cancel-button" @click="closeModal">
-                            取消
-                        </button>
-                    </div>
+                    <button type="submit" class="submit-button">筛选</button>
+                    <button type="button" class="cancel-button" @click="closeFilterModal">取消</button>
                 </form>
             </div>
         </div>
     </div>
 </template>
 
+
+
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { api } from '@/services/api'; // 引入通用 API 服务
 
-const router = useRouter(); // 路由对象
+const router = useRouter();
 
-// 控制模态框显示状态
-const showModal = ref(false);
-
-// 小组列表数据（动态加载）
+// 小组列表
 const groups = ref([]);
 
-// 模拟加载数据
-const fetchGroups = () => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve([
-                { id: 1, title: '前端开发组', currentMembers: 5, totalMembers: 10 },
-                { id: 2, title: '机器学习组', currentMembers: 3, totalMembers: 8 },
-                { id: 3, title: '产品设计组', currentMembers: 2, totalMembers: 5 },
-            ]);
-        }, 500); // 模拟延迟
-    });
-};
+// 筛选模态框状态
+const showFilterModal = ref(false);
 
-// 页面加载时获取小组数据
-onMounted(async () => {
-    groups.value = await fetchGroups();
+// 筛选条件
+const filters = ref({
+    keyword: '',
+    max_volume: null,
+    min_volume: null,
+    created_before: null,
+    created_after: null,
 });
 
-// 表单数据
-const form = ref({
-    title: '',
-    currentMembers: 0,
-    totalMembers: 0,
-    requiresApproval: false,
-    details: '',
-});
-
-// 提交表单方法
-const submitForm = () => {
-    console.log('提交的表单数据:', form.value);
-
-    // 将新组添加到小组列表中
-    groups.value.push({
-        id: groups.value.length + 1, // 动态生成 ID
-        title: form.value.title,
-        currentMembers: form.value.currentMembers,
-        totalMembers: form.value.totalMembers,
-        requiresApproval: form.value.requiresApproval,
-        details: form.value.details,
-    });
-
-    // 清空表单
-    form.value = {
-        title: '',
-        currentMembers: 0,
-        totalMembers: 0,
-        requiresApproval: false,
-        details: '',
-    };
-
-    // 关闭模态框
-    closeModal();
+// 获取所有组或根据筛选条件获取组
+const filterGroups = async () => {
+    try {
+        const payload = {
+            ...filters.value,
+            created_before: filters.value.created_before
+                ? new Date(filters.value.created_before).toISOString()
+                : undefined,
+            created_after: filters.value.created_after
+                ? new Date(filters.value.created_after).toISOString()
+                : undefined,
+        };
+        const response = await api.post('groups/filter', payload);
+        groups.value = response;
+        closeFilterModal();
+    } catch (error) {
+        console.error('筛选组失败:', error.message);
+    }
 };
 
-// 关闭模态框方法
-const closeModal = () => {
-    showModal.value = false;
-};
-
-// 跳转到小组详情页面方法
-const goToDetails = (groupId) => {
+// 跳转到组详情
+const goToGroupDetails = (groupId) => {
     router.push(`/group/${groupId}`);
 };
+
+// 打开筛选模态框
+const openFilterModal = () => {
+    showFilterModal.value = true;
+};
+
+// 关闭筛选模态框
+const closeFilterModal = () => {
+    showFilterModal.value = false;
+};
+
+// 格式化日期
+const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+};
+
+// 页面加载时默认空筛选一次
+onMounted(() => {
+    filterGroups();
+});
 </script>
 
+
+
 <style scoped>
-/* 页面容器样式 */
-.group-hall-container {
-    display: flex;
-    flex-direction: column;
+.group-hall {
     padding: 20px;
-    background-color: #eaf3ff;
-    height: 100vh;
 }
 
-/* 顶部区域样式 */
-.header {
+.actions {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: flex-end;
     margin-bottom: 20px;
 }
 
-.header-button {
+.filter-button {
     padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
     background-color: #007bff;
     color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
 }
 
-.create-button {
-    padding: 10px 20px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
+.filter-button:hover {
+    background-color: #0056b3;
 }
 
-/* 小组列表样式 */
 .group-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 16px;
+    gap: 20px;
 }
 
-.group-box {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100px;
-    background-color: white;
-    border: 1px solid #ccc;
+.group-item {
+    border: 1px solid #ddd;
     border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
+    padding: 20px;
+    background-color: #f9f9f9;
     cursor: pointer;
     text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.group-box h2 {
-    margin-bottom: 8px;
+.group-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.group-box p {
-    margin: 0;
-    font-size: 14px;
-}
-
-/* 模态框样式 */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -231,58 +191,41 @@ const goToDetails = (groupId) => {
 
 .modal {
     background-color: white;
-    border-radius: 12px;
     padding: 20px;
+    border-radius: 8px;
     width: 400px;
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.modal h2 {
-    font-size: 20px;
-    margin-bottom: 20px;
-}
-
-/* 表单样式 */
 .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 15px;
 }
 
-.form-group label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 8px;
-}
-
-.form-group input,
-.form-group textarea {
+input,
+textarea {
     width: 100%;
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
 }
 
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+.submit-button,
+.cancel-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
 }
 
 .submit-button {
-    padding: 8px 16px;
     background-color: #007bff;
     color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
 }
 
 .cancel-button {
-    padding: 8px 16px;
     background-color: #ccc;
     color: black;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
 }
 
 .submit-button:hover {

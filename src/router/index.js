@@ -4,11 +4,11 @@ import Home from '../pages/Home.vue'; // 首页
 import GroupHall from '../pages/GroupHall.vue'; // 小组大厅
 import CreatedGroups from '../pages/CreatedGroups.vue';
 import MyTasks from '../pages/MyTasks.vue'; // 我的任务
-import PersonalInfo from '../pages/PersonalInfo.vue'; // 个人信息
+import profile from '../pages/Profile.vue'; // 个人信息
 import Login from '../pages/Login.vue'; // 登录页面
 import Register from '../pages/Register.vue'; // 注册页面
 import ApprovedGroups from '../pages/ApprovedGroups.vue';
-import PendingApplications from '../pages/PendingApplications.vue';
+// import PendingApplications from '../pages/PendingApplications.vue';
 import NotificationList from '../pages/NotificationList.vue';
 import GroupDetails from '../pages/GroupDetails.vue';
 
@@ -24,7 +24,7 @@ const routes = [
     ]
   },
   { path: '/notifications', component: NotificationList }, // 通知列表页面
-  { path: '/group/:id', component: GroupDetails }, // 小组详情
+  { path: '/group/:group_id', component: GroupDetails }, // 小组详情
   {
     path: '/group-hall', // 小组大厅页面
     component: Layout,
@@ -43,12 +43,15 @@ const routes = [
         redirect: '/my-group/joined/approved',
         children: [
           { path: 'approved', component: ApprovedGroups },
-          { path: 'pending', component: PendingApplications },
+          // { path: 'pending', component: PendingApplications },
         ],
       },
     ],
   },
-
+  {
+    path: '/group/:group_id', // 定义动态路径
+    component: GroupDetails, // 关联的组件
+  },
   {
     path: '/my-tasks', // 我的任务页面
     component: Layout,
@@ -57,10 +60,10 @@ const routes = [
     ]
   },
   {
-    path: '/personal-info', // 个人信息页面
+    path: '/profile', // 个人信息页面
     component: Layout,
     children: [
-      { path: '', component: PersonalInfo },
+      { path: '', component: profile },
     ]
   },
 ];

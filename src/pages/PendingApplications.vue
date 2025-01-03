@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
     <div class="pending-applications-container">
         <h1>申请中</h1>
         <div class="group-list">
@@ -57,4 +57,4 @@ const goToDetails = (groupId) => {
 .group-box:hover {
     background-color: #d7e6fd;
 }
-</style>
+</style> -->

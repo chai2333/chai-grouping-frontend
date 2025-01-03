@@ -1,9 +1,6 @@
 <template>
     <div class="sidebar">
-        <!-- 顶部标题区域 -->
-        <div class="header">
-            <span class="title">🐕ChaiTeam</span>
-        </div>
+
 
         <!-- 导航按钮区域 -->
         <div class="menu">
@@ -29,16 +26,16 @@
                             <button class="sub-sub-nav-button" @click="navigateTo('/my-group/joined/approved')">
                                 已入队
                             </button>
-                            <button class="sub-sub-nav-button" @click="navigateTo('/my-group/joined/pending')">
+                            <!-- <button class="sub-sub-nav-button" @click="navigateTo('/my-group/joined/pending')">
                                 申请中
-                            </button>
+                            </button> -->
                         </div>
                     </div>
                 </div>
             </div>
 
             <button class="nav-button" @click="navigateTo('/my-tasks')">我的任务</button>
-            <button class="nav-button" @click="navigateTo('/personal-info')">
+            <button class="nav-button" @click="navigateTo('/profile')">
                 个人信息
             </button>
         </div>

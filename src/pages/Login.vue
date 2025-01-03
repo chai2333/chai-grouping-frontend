@@ -22,6 +22,9 @@
                     <input id="password" type="password" v-model="form.password" placeholder="请输入密码" required />
                 </div>
 
+                <!-- 错误提示信息 -->
+                <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+
                 <!-- 登录按钮 -->
                 <div class="form-actions">
                     <button type="submit" class="login-button">登录</button>
@@ -58,10 +61,12 @@ const errorMessage = ref(''); // 错误提示信息
 const handleLogin = async () => {
     try {
         const response = await api.post('auth/login', form.value); // 使用 POST 方法
-        const { token } = response;
 
-        // 保存 token 到本地
-        localStorage.setItem('token', token);
+        console.log(response);
+
+        const { token, user_id } = response;
+        localStorage.setItem('token', token); // 保存 token
+        localStorage.setItem('user_id', user_id); // 保存 user_id
 
         // 跳转到首页
         router.push('/home');

@@ -16,7 +16,6 @@
             <div class="feature-box" @click="navigateTo('/notifications')">最近通知</div>
         </div>
 
-
     </div>
 </template>
 
