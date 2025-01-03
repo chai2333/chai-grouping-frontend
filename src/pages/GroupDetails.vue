@@ -11,6 +11,14 @@
             <button @click="confirmDisbandGroup" class="disband-button">解散小组</button>
         </div>
 
+        <!-- 申请加入小组 -->
+        <div v-if="!is_member" class="join-group-section">
+            <h3>申请加入该组</h3>
+            <textarea v-model="join_request.description" placeholder="请输入申请描述，例如您的技能或意图"></textarea>
+            <button class="submit-button" @click="applyToGroup">提交申请</button>
+        </div>
+
+
         <!-- 成员列表 -->
         <h2>组员列表</h2>
         <div class="member-list">
@@ -19,6 +27,7 @@
                 <span>{{ member.username.slice(-3) }}</span>
             </div>
         </div>
+
         <!-- 组员详情模态框 -->
         <div v-if="show_member_modal" class="modal-overlay">
             <div class="modal">
@@ -34,7 +43,6 @@
                 </div>
             </div>
         </div>
-
         <!-- 编辑模态框 -->
         <div v-if="show_edit_modal" class="modal-overlay">
             <div class="modal">
@@ -91,11 +99,47 @@ const route = useRoute();
 const router = useRouter();
 const group_id = route.params.group_id;
 
+// 申请加入小组状态
+const join_request = ref({
+    description: '',
+});
+
+// 是否为小组成员
+const is_member = computed(() => {
+    const user_id = parseInt(localStorage.getItem('user_id')); // 从 localStorage 获取当前用户 ID
+    console.log('当前用户 ID:', user_id);
+
+    const member = group_details.value.members.find((member) => member.user_id === user_id);
+    console.log('当前用户是否是小组成员:', !!member);
+    return !!member; // 如果找到匹配的成员，返回 true；否则返回 false
+});
+
+
+
+
 // 控制模态框显示状态
 const show_member_modal = ref(false);
 
 // 当前组员的详情数据
 const member_details = ref({});
+
+// 提交加入小组申请方法
+const applyToGroup = async () => {
+    if (!join_request.description.trim()) {
+        alert('请输入申请描述！');
+        return;
+    }
+
+    try {
+        const response = await api.post(`groups/${group_id}/apply`, join_request.value);
+        alert(response.message || '申请已发送');
+        join_request.description = ''; // 清空输入框
+    } catch (error) {
+        console.error('提交加入组申请失败:', error.message);
+        alert(error.response?.data?.message || '提交申请失败，请稍后再试');
+    }
+};
+
 
 // 获取组员详情的方法
 const fetchMemberDetails = async (userId) => {
@@ -384,5 +428,36 @@ select {
 
 .cancel-button:hover {
     background-color: #999;
+}
+
+.join-group-section {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: none;
+}
+
+.submit-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+}
+
+.submit-button:hover {
+    background-color: #0056b3;
 }
 </style>

@@ -12,7 +12,7 @@
             <div v-for="group in createdGroups" :key="group.group_id" class="group-item"
                 @click="goToGroupDetails(group.group_id)">
                 <h2>{{ group.name }}</h2>
-                <p>成员：{{ group.member_count }} / {{ group.volume }}</p>
+                <p>成员：{{ group.member_count }} / {{ group.volume === 0 ? '无成员限制' : group.volume }}</p>
                 <p>创建时间：{{ formatDate(group.join_date) }}</p>
                 <p class="leader-badge">我是组长</p>
             </div>
