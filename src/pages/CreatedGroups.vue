@@ -48,8 +48,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="approvalRequired">是否需要申请</label>
-                        <select id="approvalRequired" v-model="newGroup.approvalRequired">
+                        <label for="approval_required">是否需要申请</label>
+                        <select id="approval_required" v-model="newGroup.approval_required">
                             <option :value="1">需要申请</option>
                             <option :value="0">直接加入</option>
                         </select>
@@ -83,7 +83,7 @@ const newGroup = ref({
     description: '',
     volume: 0,
     visibility: 1, // 默认值：公开（1 表示公开，0 表示不公开）
-    approvalRequired: 1, // 默认值：需要申请（1 表示需要申请，0 表示直接加入）
+    approval_required: 1, // 默认值：需要申请（1 表示需要申请，0 表示直接加入）
 });
 
 // 获取我创建的组
