@@ -14,6 +14,10 @@ module.exports = defineConfig({
         }
       });
     },
-    baseUrl: 'http://localhost:5173'
+    baseUrl: 'http://localhost:5173',
+    supportFile: 'cypress-sys/support/e2e.js',
+    specPattern: 'cypress-sys/e2e/**/*.cy.{js,jsx,ts,tsx}',
+    fixturesFolder: 'cypress-sys/fixtures',
+    screenshotsFolder: 'cypress-sys/screenshots'
   }
 });
