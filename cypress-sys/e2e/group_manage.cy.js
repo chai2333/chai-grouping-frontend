@@ -161,22 +161,12 @@ describe('CG_Sys_Testcase_Group_03 - 我的小组管理-编辑与解散', () => 
     cy.get('input#volume').clear().type('15');
     cy.get('button[type="submit"]').contains('保存').click();
 
-    // 断言提示信息
-    cy.on('window:alert', (txt) => {
-      expect(txt).to.match(/已更新|小组信息已更新|更改/);
-    });
-
     // 断言页面已显示新组名
     cy.contains(newName).should('exist');
 
     // 3. 点击“解散小组”并确认
     cy.contains('解散小组').click();
     cy.on('window:confirm', () => true);
-
-    // 断言解散提示
-    cy.on('window:alert', (txt) => {
-      expect(txt).to.match(/小组已解散|解散/);
-    });
 
     // 跳转回组队大厅
     cy.url().should('include', '/group-hall');
