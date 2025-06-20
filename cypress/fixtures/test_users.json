@@ -1,0 +1,26 @@
+{
+  "Leader1": {
+    "id": 1,
+    "username": "Leader1",
+    "password": "pswd_l1",
+    "token": "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjEsImV4cCI6LTkyMjMzNzAyODY0NTczNDV9.DkG76AoPfq3Yi8wGCw3sxeRTEBS4qlfLSGVCyaAeEXR7Yj5fp4hRhl4ooL4qarFEaLpbVU0v5Mop_20_SvRKgw"
+  },
+  "Member1": {
+    "id": 2,
+    "username": "Member1",
+    "password": "pswd_m1",
+    "token": "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjIsImV4cCI6LTkyMjMzNzAyODY0NTczMjd9.LzIJG-tVfNBpLe_tUxfvBL7v0I-dpFmPb3LSzZh14HJIXivH_s0PLwNXy7SWa-yzRtTFnlCF02imZwvlUOshBw"
+  },
+  "Member2": {
+    "id": 3,
+    "username": "Member2",
+    "password": "pswd_m2",
+    "token": "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjMsImV4cCI6LTkyMjMzNzAyODY0NTcyNDl9.taHqyH5S6oz7T09bmYuX5xa6n5pgMycj7639D6npIddWMCJjzi7MHkFi0spWeWr-TnaZwEIk2qMQpGGdrhp-1A"
+  },
+  "Member3": {
+    "id": 4,
+    "username": "Member3",
+    "password": "pswd_m3",
+    "token": "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjQsImV4cCI6LTkyMjMzNzAyODY0NTcxOTh9.CJkfwbRiyJOqRtBOTWVsF4MVaAQ_gfXclTcFjfOSmgXFXN6-XtmrDPyTlbYZuM-L51B8XUP9aQcIk5HZu-wkMg"
+  }
+}

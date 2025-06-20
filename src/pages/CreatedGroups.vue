@@ -90,9 +90,9 @@ const newGroup = ref({
 const fetchCreatedGroups = async () => {
     try {
         const response = await api.get('groups'); // 调用 `/api/groups` 接口获取所有组
+        console.log('我创建的组:', response);
         // 筛选我是组长的组
         createdGroups.value = response.filter((group) => group.is_leader === 1);
-        console.log('我创建的组:', createdGroups.value);
     } catch (error) {
         console.error('获取我创建的组失败:', error.message);
     }

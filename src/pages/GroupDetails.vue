@@ -275,8 +275,8 @@ const member_details = ref({});
 // 提交加入小组申请方法
 const applyToGroup = async () => {
     console.log('join_request 对象:', join_request.value);
-    console.log('申请描述原始值:', join_request.description);
-    console.log('去掉空格后的值:', join_request.description?.trim());
+    console.log('申请描述原始值:', join_request.value.description);
+    console.log('去掉空格后的值:', join_request.value.description?.trim());
     // 确保 join_request.description 存在并为字符串
     const description = join_request.value.description?.trim() || '';
 
