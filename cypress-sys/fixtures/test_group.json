@@ -1,0 +1,9 @@
+{
+  "group": 1,
+  "name": "Gp1",
+  "description": "Desc1",
+  "creation_date": "2000-01-01",
+  "visibility": 1,
+  "approval_required": 1,
+  "leader_id": 1
+}

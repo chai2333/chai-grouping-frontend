@@ -384,6 +384,7 @@ const updateGroup = async () => {
 const fetchGroupDetails = async () => {
     try {
         const response = await api.get(`groups/${group_id}`);
+        console.log(response);
         group_details.value = response;
     } catch (error) {
         console.error('获取小组详情失败：', error.message);
@@ -448,7 +449,7 @@ const createTask = async () => {
             deadline: '',
             assignee_id: null
         };
-        fetchGroupTasks();
+        await fetchGroupTasks();
     } catch (error) {
         console.error('创建任务失败：', error.message);
         alert(error.response?.data?.message || '创建任务失败，请稍后再试');
